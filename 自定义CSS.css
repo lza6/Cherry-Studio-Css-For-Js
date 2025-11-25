@@ -1,0 +1,291 @@
+/* ==========================================================================
+   Cherry Studio Ultimate Theme - Performance & Aesthetic Edition
+   优化方向：极致性能、高可读性、现代美学、流畅动画
+   ========================================================================== */
+
+/* 1. 字体引入：使用 swap 策略避免阻塞渲染 */
+@import url("//cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css");
+
+/* =========================================
+   全局变量定义 (Design Tokens)
+   ========================================= */
+:root {
+  /* --- 字体系统 --- */
+  /* 英文优先系统栈以保证渲染速度，中文使用霞鹜文楷 */
+  --font-primary: "LXGW WenKai Screen", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", Consolas, "Menlo", monospace;
+  
+  /* --- 动画系统 (更跟手的物理曲线) --- */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1); /* 弹簧效果 */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);          /* 丝滑过渡 */
+  --duration-fast: 0.2s;
+  --duration-normal: 0.3s;
+
+  /* --- 尺寸系统 --- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --spacing-unit: 16px;
+}
+
+/* =========================================
+   明亮模式 (Light Mode) - 清透、护眼
+   ========================================= */
+body[theme-mode="light"] {
+  --bg-app: #F7F8FA;              /* 整体背景：极淡的灰蓝，比纯白更护眼 */
+  --bg-card: #FFFFFF;             /* 卡片背景：纯白 */
+  --bg-input: rgba(255, 255, 255, 0.85); /* 输入框：毛玻璃基底 */
+  
+  --text-primary: #1F2937;        /* 主文字：深灰，非纯黑，减少视觉疲劳 */
+  --text-secondary: #4B5563;      /* 次要文字 */
+  --text-code: #D14;              /* 行内代码颜色 */
+  
+  --border-color: rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-float: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  
+  --accent-color: #3B82F6;        /* 品牌蓝 */
+  --accent-bg: rgba(59, 130, 246, 0.08);
+  
+  --code-block-bg: #F3F4F6;       /* 代码块背景 */
+}
+
+/* =========================================
+   暗黑模式 (Dark Mode) - 深邃、沉浸
+   ========================================= */
+body[theme-mode="dark"] {
+  --bg-app: #0F1117;              /* 极深蓝黑，OLED友好 */
+  --bg-card: #1E212B;             /* 卡片背景 */
+  --bg-input: rgba(30, 33, 43, 0.85);
+  
+  --text-primary: #E5E7EB;        /* 主文字：柔和白 */
+  --text-secondary: #9CA3AF;
+  --text-code: #F472B6;
+  
+  --border-color: rgba(255, 255, 255, 0.08);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-float: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  
+  --accent-color: #60A5FA;
+  --accent-bg: rgba(96, 165, 250, 0.1);
+  
+  --code-block-bg: #16181D;
+}
+
+/* =========================================
+   核心基础样式 & 性能优化
+   ========================================= */
+body {
+  background-color: var(--bg-app);
+  font-family: var(--font-primary);
+  color: var(--text-primary);
+  line-height: 1.75; /* 黄金阅读行高 */
+  font-size: 15px;
+  
+  /* 字体渲染增强 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  
+  transition: background-color var(--duration-normal) ease;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-secondary);
+  opacity: 0.2;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+/* =========================================
+   消息卡片 (Message Cards)
+   ========================================= */
+/* 动画定义 */
+@keyframes cardEntry {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.message-content-container {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 20px 24px; /* 增加水平内边距 */
+  margin-block: 12px;
+  
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  
+  /* 关键性能优化：内容可见性 */
+  /* 这会让浏览器跳过屏幕外内容的渲染，极大提升长对话流畅度 */
+  content-visibility: auto; 
+  contain-intrinsic-size: 100px; 
+  
+  animation: cardEntry 0.3s var(--ease-spring) forwards;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 悬停微交互 */
+.message-content-container:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-color); /* 悬停时边框变色 */
+}
+
+/* 用户消息特化 */
+.chat-item.user .message-content-container {
+  background-color: var(--accent-bg);
+  border-color: transparent; /* 用户消息不需要边框，更干净 */
+  border-right: 3px solid var(--accent-color); /* 右侧强调线 */
+}
+
+/* AI 消息特化 */
+.chat-item.assistant .message-content-container {
+  border-left: 3px solid var(--text-secondary); /* 左侧辅助线 */
+}
+
+/* =========================================
+   Markdown 内容增强
+   ========================================= */
+/* 标题优化 */
+.markdown h1, .markdown h2, .markdown h3 {
+  font-weight: 700;
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
+  color: var(--text-primary);
+  letter-spacing: -0.02em; /* 标题字距微调，更紧凑 */
+}
+
+/* 强调文字 */
+.markdown strong, .markdown b {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+/* 列表优化 */
+.markdown ul, .markdown ol {
+  padding-left: 1.5em;
+}
+.markdown li {
+  margin-bottom: 0.4em;
+}
+
+/* 链接样式 */
+.markdown a {
+  color: var(--accent-color);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--accent-color);
+  transition: all 0.2s;
+}
+.markdown a:hover {
+  border-bottom-style: solid;
+  background: var(--accent-bg);
+}
+
+/* =========================================
+   代码块 (Code Blocks) - 程序员级优化
+   ========================================= */
+/* 代码块容器 */
+.markdown pre {
+  background-color: var(--code-block-bg) !important;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin: 16px 0;
+  overflow-x: auto;
+  
+  /* 字体设置 */
+  font-family: var(--font-mono) !important;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+/* 行内代码 `code` */
+.markdown :not(pre) > code {
+  background-color: var(--code-block-bg);
+  color: var(--text-code);
+  font-family: var(--font-mono) !important;
+  font-size: 0.9em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+/* 复制按钮优化 (如果有的话) */
+.copy-btn {
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.copy-btn:hover {
+  opacity: 1;
+}
+
+/* =========================================
+   输入框区域 (Input Area) - 悬浮玻璃态
+   ========================================= */
+#inputbar {
+  background: var(--bg-input);
+  backdrop-filter: blur(12px); /* 毛玻璃效果 */
+  -webkit-backdrop-filter: blur(12px);
+  
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  margin: 20px 10px; /* 留出边距，形成悬浮感 */
+  
+  box-shadow: var(--shadow-float);
+  transition: all var(--duration-normal) var(--ease-smooth);
+  
+  /* 提升层级 */
+  z-index: 100;
+}
+
+/* 输入框聚焦状态 */
+#inputbar:focus-within {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-bg), var(--shadow-float); /* 光晕效果 */
+  transform: translateY(-2px); /* 微微上浮 */
+}
+
+/* 输入框内的文本域 */
+#inputbar textarea {
+  font-family: var(--font-primary);
+  font-weight: 500;
+}
+
+/* =========================================
+   其他 UI 组件优化
+   ========================================= */
+/* 顶部导航栏 */
+.navbar {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 按钮通用样式 */
+button {
+  font-family: var(--font-primary);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: transform 0.1s, background 0.2s;
+}
+button:active {
+  transform: scale(0.96); /* 点击回弹效果 */
+}
+
+/* 图标修正 */
+.iconfont {
+  font-weight: normal !important;
+}
